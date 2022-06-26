@@ -1,0 +1,6 @@
+FROM mariadb
+COPY ./docker/setup.sql /docker-entrypoint-initdb.d
+RUN chmod +x /docker-entrypoint-initdb.d/
+ENV MYSQL_ROOT_PASSWORD=hello
+
+CMD [ "mysqld"]

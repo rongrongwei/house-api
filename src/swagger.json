@@ -1,0 +1,427 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "description": "Rongrong Wei's CS 4783 Project",
+    "title": "CS 4783 Project",
+    "version": "1.0.0"
+  },
+  "schemes": [
+    "https"
+  ],
+  "components": {
+    "securitySchemes": {
+          "api-key" : {
+            "type": "apiKey",
+            "in": "header",
+            "name": "api-key"   
+          } 
+    }
+  },
+  "securityDefinitions": {
+    "api-key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "api-key"
+    }
+  },
+    "paths": {
+      "/hello": {
+        "get": {
+          "parameters": [],
+          "description": "This is a simple one to get you started. Call the endpoint, get a static response.",
+          "responses": {
+            "200": {
+              "description": "Hello response to caller",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "hello yourself"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/properties": {
+        "get": {
+          "parameters": [],
+          "description": "Returns a list of stored US properties(id, address, and zip) ordered by id",
+          "responses": {
+            "200": {
+              "description": "A list of properties",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "id": 1,
+                      "address": "501 Test Ave.",
+                      "zip": "78222"
+                    },
+                    {
+                      "id": 2,
+                      "address": "123 Main Street",
+                      "zip": "78222"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "id": {
+                        "type": "int64",
+                        "example": "1"
+                      },
+                      "address": {
+                        "type": "string",
+                        "example": "501 Test Ave."
+                      },
+                      "zip": {
+                        "type": "string",
+                        "example": "78222"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "post": {
+          "security": [
+            {
+              "api-key":[]
+            }
+          ],
+          "requestBody": {
+              "description": "address information for new property",
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+          },
+          "description": "Add a property. Address must be between 1 and 255 chars. City must be between 1 and 50 chars. State must be exactly 2 chars. Zip must be between 5 and 10 chars. All fields are required. The system will auto-assign a unique id to the new property.",
+          "responses": {
+            "200": {
+              "description": " Successful operation",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "added",
+                      "id": 1
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request error",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "address is not between 1 and 255 characters"
+                    },
+                    {
+                      "message": "state is not 2 characters"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/properties/{id}": {
+        "get": {
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the property that needs to be retrieved",
+              "required": true,
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          ],
+          "description": "Return detailed info for the property with an id value of <id>",
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "id": 1,
+                    "address": "123 Test Ave.",
+                    "city": "San Antonio",
+                    "state": "TX",
+                    "zip": "78222"
+                  },
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "address": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request"
+            },
+            "404": {
+              "description": "Not found"
+            }
+          }
+        },
+        "delete": {
+          "tags": [],
+          "summary": "Delete the property by id",
+          "description": "Delete the property with an id value of (id).",
+          "operationId": "deleteProperty",
+          "produces": [
+            "application/json"
+          ],
+          "security": [
+            {
+              "api-key":[]
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the property that needs to be deleted",
+              "required": true,
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully Deleted Property with Specified Id",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "deleted"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request"
+            },
+            "404": {
+              "description": "Not found"
+            }
+          }
+        },
+        "put": {
+          "tags": [],
+          "summary": "Update Property by Id",
+          "description": "Updates the property with an id value of (id). Only the fields to be modified need to be present in the response data",
+          "operationId": "updatePropertyById",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "property that need to be updated",
+              "required": true,
+              "type": "integer",
+              "minimum": 1,
+              "format": "int64"
+            }
+          ],
+          "security": [
+            {
+              "api-key":[]
+            }
+          ],
+          "requestBody": {
+              "description": "address items to be updated",
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zip": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+          },
+          "responses": {
+            "200": {
+              "description:": "Successful.",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "updated"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "example": [
+                    {
+                      "message": "address is not between 1 and 255 characters"
+                    },
+                    {
+                      "message": "state is not 2 characters"
+                    }
+                  ],
+                  "schema": {
+                    "type": "array",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found"
+            }
+          }
+        }
+      }
+    },
+    "servers": [
+      {
+        "url": "https://10.100.126.27:{port}",
+        "description": "Development server",
+        "variables": {
+          "port": {
+            "enum": [
+              "12300"
+            ],
+            "default": "12300"
+          },
+          "basePath": {
+            "default": ""
+          }
+        }
+      },
+      {
+        "url": "https://easel4.cs.utsarr.net:{port}",
+        "description": "Development server",
+        "variables": {
+          "port": {
+            "enum": [
+              "12300"
+            ],
+            "default": "12300"
+          },
+          "basePath": {
+            "default": ""
+          }
+        }
+      }
+    ]
+  }

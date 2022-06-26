@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tyw061-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20M
+  storageClassName: "manual"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tyw061-db-deployment
+  labels:
+    app: tyw061-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tyw061-db
+  template:
+    metadata:
+      labels:
+        app: tyw061-db
+    spec:
+      containers:
+        - name: tyw061-db-c
+          image: tyw061/tyw061_db
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: tyw061-db-vol
+      volumes:
+      - name: tyw061-db-vol
+        persistentVolumeClaim:
+          claimName: tyw061-pvc

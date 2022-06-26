@@ -1,0 +1,4 @@
+flask
+pyopenssl 
+mysql-connector
+pytest

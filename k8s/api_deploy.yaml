@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tyw061-api-deployment
+  labels:
+    app: tyw061-api
+spec:
+  selector:
+    matchLabels:
+      app: tyw061-api
+  replicas: 1
+  template:
+    metadata: 
+      labels:
+        app: tyw061-api
+    spec:
+      containers:
+      - name:  tyw061-api-c
+        image:  tyw061/tyw061_api
+        ports:
+        - containerPort: 12300
+      imagePullSecrets:
+        - name: tyw061-dockerhub

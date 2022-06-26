@@ -1,0 +1,21 @@
+version: "3.8"
+
+volumes:
+    tyw061-db-vol: {}
+
+services:
+    tyw061-db:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile_db
+        volumes:
+            - tyw061-db-vol:/var/lib/mysql
+
+    tyw061-api:
+        depends_on:
+            - tyw061-db
+        build:
+            context: .
+            dockerfile: docker/Dockerfile_api
+        ports:
+            - "12300:12300"
