@@ -1,0 +1,78 @@
+stages:
+  - build
+  - test
+  - deploy 
+  # - deploy-test
+  # - clean-up
+
+build-job:
+  stage: build
+  script:
+    - echo "Building project..."
+    - python3 --version
+    - python3.6 -m pip install --no-cache-dir -r requirements.txt
+
+unit-test-job:
+  stage: test
+  script:
+    - echo "Running unit tests..."
+    - echo "$DB_CRED" >src/dbpassword.py
+    - ls src
+    - python3.6 -m pytest -v
+
+
+curl-test-job:
+  stage: test
+  script:
+    - echo "Deploying to class server..."
+    - echo "$PRIVATE_KEY" > ./my_private_key
+    - chmod 400 ./my_private_key
+    - sleep 10
+    - ssh -o StrictHostKeyChecking=no -i ./my_private_key tyw061@10.100.201.3 "cd ~/cs4783-project-spring2021; git checkout assignment5; git pull; echo "$DB_CRED_ADMINER" >src/dbpassword.py; echo "$DB_HOST_EASEL4" >src/dbhost.py; cd src; pm2 start main.py --interpreter=python3 || pm2 restart main"
+    - sleep 10
+    - sleep 20
+    - echo "Running CURL tests..."
+    - chmod +x ./tests/*.sh
+    - ./tests/curltest_easel.sh
+    - echo "cleaning up"
+    - ssh -o StrictHostKeyChecking=no -i ./my_private_key tyw061@10.100.201.3 "cd ~/cs4783-project-spring2021; pm2 delete main"
+    - rm ./my_private_key
+
+
+deliver-job:
+  stage: deploy
+  script:
+  #Docker Setup
+   - echo "Deploying to class server..."
+   - echo "$DB_CRED" >src/dbpassword.py
+   - echo "$DB_HOST_K8S" >src/dbhost.py
+   - echo "$DOCKER_TOKEN" | docker login -u tyw061 --password-stdin 
+   - docker build -t tyw061/tyw061_api:latest -f docker/Dockerfile_api .
+   - docker push tyw061/tyw061_api:latest
+  # K8s Setup
+   - echo "$KUBE_CONFIG" >./config
+   - chmod 400 ./config
+   - kubectl --kubeconfig config get services # does it work?
+   - kubectl --kubeconfig config apply -f k8s/db_deploy.yaml
+   - kubectl --kubeconfig config apply -f k8s/api_deploy.yaml
+   - kubectl --kubeconfig config apply -f k8s/api_service.yaml
+   - kubectl rollout restart deployment tyw061-api-deployment --kubeconfig config 
+   - sleep 10
+
+
+# curl-test:
+#   stage: deploy-test
+#   script:
+#     - echo "Running CURL tests..."
+#     - sleep 10
+#     - chmod +x ./tests/*.sh
+#     - ./tests/curltest_k8.sh # not sure if this static IP will work
+
+# used for testing runner
+#clean-up-k8s:
+#  stage: clean-up
+#  script:
+#    - echo "Cleaning up k8s api"
+#     # commented out so that assignment can be tested
+#   - kubectl delete deployment tyw061-api-deployment || echo "deployment is not present"
+#   - kubectl delete deployment tyw061-db-deployment || echo "deployment is not present"
